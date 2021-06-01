@@ -22,7 +22,7 @@ const flatOptions = {
   savePrefix: '^',
 }
 const npm = mockNpm({
-  globalDir: __dirname,
+  dir: __dirname,
   prefix: '.',
   config,
   flatOptions,
@@ -49,8 +49,7 @@ t.afterEach(() => {
   flatOptions.diffDstPrefix = ''
   flatOptions.diffText = false
   flatOptions.savePrefix = '^'
-  npm.globalDir = __dirname
-  npm.prefix = '..'
+  npm.dir = resolve(__dirname, 'node_modules')
   libnpmdiff = noop
   rpn = () => 'foo'
 })
@@ -69,7 +68,7 @@ t.test('no args', t => {
       t.match(opts, npm.flatOptions, 'should forward flat options')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -82,7 +81,7 @@ t.test('no args', t => {
     diff.exec([], err => {
       t.match(
         err,
-        /Needs multiple arguments to compare or run from a project dir./,
+        /Needs multiple arguments to compare when not running from a project dir./,
         'should throw EDIFF error msg'
       )
       t.end()
@@ -97,7 +96,7 @@ t.test('no args', t => {
     diff.exec([], err => {
       t.match(
         err,
-        /Needs multiple arguments to compare or run from a project dir./,
+        /Needs multiple arguments to compare when not running from a project dir./,
         'should throw EDIFF error msg'
       )
       t.end()
@@ -123,7 +122,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['foo@1.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -138,11 +137,11 @@ t.test('single arg', t => {
     }
 
     config.diff = ['foo@1.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       t.match(
         err,
-        /Needs multiple arguments to compare or run from a project dir./,
+        /Needs multiple arguments to compare when not running from a project dir./,
         'should throw usage error'
       )
       t.end()
@@ -160,7 +159,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['foo@~1.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -178,7 +177,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['2.1.4']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -194,7 +193,7 @@ t.test('single arg', t => {
     diff.exec([], err => {
       t.match(
         err,
-        /Needs multiple arguments to compare or run from a project dir./,
+        /Needs multiple arguments to compare when not running from a project dir./,
         'should throw an error message explaining usage'
       )
       t.end()
@@ -218,7 +217,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['2.1.4']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec(['./foo.js', './bar.js'], err => {
       if (err)
         throw err
@@ -241,7 +240,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['bar@1.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -268,7 +267,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['simple-output']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -282,11 +281,11 @@ t.test('single arg', t => {
     }
 
     config.diff = ['bar']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       t.match(
         err,
-        /Needs multiple arguments to compare or run from a project dir./,
+        /Needs multiple arguments to compare when not running from a project dir./,
         'should throw usage error'
       )
       t.end()
@@ -314,7 +313,7 @@ t.test('single arg', t => {
     })
 
     config.diff = ['bar']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     const Diff = t.mock('../../lib/diff.js', {
       ...mocks,
@@ -377,8 +376,7 @@ t.test('single arg', t => {
     config.global = true
     flatOptions.global = true
     config.diff = ['lorem']
-    npm.prefix = resolve(path, 'project')
-    npm.globalDir = resolve(path, 'globalDir/lib/node_modules')
+    npm.dir = resolve(path, 'globalDir/lib/node_modules')
 
     const Diff = t.mock('../../lib/diff.js', {
       ...mocks,
@@ -430,7 +428,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['bar@2.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -469,7 +467,6 @@ t.test('single arg', t => {
 
     const Diff = t.mock('../../lib/diff.js', {
       ...mocks,
-      '../../lib/utils/read-package-name.js': async () => 'my-project',
       pacote: {
         packument: (spec) => {
           t.equal(spec.name, 'lorem', 'should have expected spec name')
@@ -487,7 +484,7 @@ t.test('single arg', t => {
     const diff = new Diff(npm)
 
     config.diff = ['lorem']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -520,7 +517,7 @@ t.test('single arg', t => {
     const diff = new Diff(npm)
 
     config.diff = ['lorem']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -539,7 +536,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['bar']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -558,7 +555,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['my-project']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -576,7 +573,7 @@ t.test('single arg', t => {
     }
 
     config.diff = ['/path/to/other-dir']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       if (err)
         throw err
@@ -644,7 +641,7 @@ t.test('first arg is a qualified spec', t => {
       t.equal(b, `bar@file:${resolve(path, 'node_modules/bar')}`, 'should target local node_modules pkg')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar@2.0.0', 'bar']
     diff.exec([], err => {
       if (err)
@@ -713,7 +710,7 @@ t.test('first arg is a known dependency name', t => {
       t.equal(b, 'bar@2.0.0', 'should set expected second spec')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar', 'bar@2.0.0']
     diff.exec([], err => {
       if (err)
@@ -753,7 +750,7 @@ t.test('first arg is a known dependency name', t => {
       t.equal(b, `bar-fork@file:${resolve(path, 'node_modules/bar-fork')}`, 'should target fork local node_modules pkg')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar', 'bar-fork']
     diff.exec([], err => {
       if (err)
@@ -787,7 +784,7 @@ t.test('first arg is a known dependency name', t => {
       t.equal(b, 'bar@2.0.0', 'should use package name from first arg')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar', '2.0.0']
     diff.exec([], err => {
       if (err)
@@ -821,7 +818,7 @@ t.test('first arg is a known dependency name', t => {
       t.equal(b, 'bar-fork@latest', 'should set expected second spec')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar', 'bar-fork']
     diff.exec([], err => {
       if (err)
@@ -875,7 +872,7 @@ t.test('first arg is a valid semver range', t => {
       t.equal(b, `bar@file:${resolve(path, 'node_modules/bar')}`, 'should set expected second spec from nm')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['1.0.0', 'bar']
     diff.exec([], err => {
       if (err)
@@ -906,7 +903,7 @@ t.test('first arg is a valid semver range', t => {
     }
 
     config.diff = ['1.0.0', '2.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec([], err => {
       t.match(
         err,
@@ -958,7 +955,7 @@ t.test('first arg is a valid semver range', t => {
     const diff = new Diff(npm)
 
     config.diff = ['1.0.0', 'lorem@2.0.0']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -977,7 +974,7 @@ t.test('first arg is an unknown dependency name', t => {
       t.equal(a, 'bar@latest', 'should set expected first spec')
       t.equal(b, 'bar@2.0.0', 'should set expected second spec')
       t.match(opts, npm.flatOptions, 'should forward flat options')
-      t.match(opts, { where: '.' }, 'should forward pacote options')
+      t.match(opts, { where: __dirname }, 'should forward pacote options')
     }
 
     config.diff = ['bar', 'bar@2.0.0']
@@ -1013,7 +1010,7 @@ t.test('first arg is an unknown dependency name', t => {
       t.equal(b, `bar@file:${resolve(path, 'node_modules/bar')}`, 'should target local node_modules pkg')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     config.diff = ['bar-fork', 'bar']
     diff.exec([], err => {
       if (err)
@@ -1064,7 +1061,7 @@ t.test('first arg is an unknown dependency name', t => {
     }
 
     config.diff = ['bar', 'bar-fork']
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
 
     diff.exec([], err => {
       if (err)
@@ -1134,7 +1131,7 @@ t.test('various options', t => {
       }, 'should forward all remaining items as filenames')
     }
 
-    npm.prefix = path
+    npm.dir = resolve(path, 'node_modules')
     diff.exec(['./foo.js', './bar.js'], err => {
       if (err)
         throw err
